@@ -9,10 +9,12 @@ dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+const rootDir = path.join(__dirname, '..');
 
 const app = express();
 app.use(cors());
 app.use(express.json());
+app.use(express.static(rootDir));
 
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/mindboard';
 
@@ -145,7 +147,7 @@ app.put('/api/users/:username', async (req, res) => {
 
 // Serve index.html for all routes
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '../index.html'));
+  res.sendFile(path.join(rootDir, 'index.html'));
 });
 
 export default app;
