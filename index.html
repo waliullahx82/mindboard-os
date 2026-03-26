@@ -233,6 +233,7 @@ body{background:var(--bg);font-family:'Courier Prime',monospace;overflow:hidden;
 #tutorial strong{color:var(--amber);}
 #tutorial-close{position:absolute;top:5px;right:7px;background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:12px;}
 #tutorial-close:hover{color:var(--red2);}
+#mobile-tutorial{display:none;}
 
 /* rubber-band */
 #sel-rect{position:absolute;border:1px dashed var(--amber);background:rgba(212,160,18,.05);pointer-events:none;display:none;z-index:200;}
@@ -253,6 +254,10 @@ body{font-size:14px;}
 .swatch{width:14px;height:14px;}
 #hint-text{display:none;}
 #tutorial{display:none;}
+#mobile-tutorial{position:fixed;bottom:40px;left:10px;right:10px;background:rgba(12,10,6,.97);border:1px solid #3a3020;border-radius:4px;padding:12px 14px;z-index:1100;font-size:9px;color:var(--text-dim);line-height:1.8;transition:opacity .5s,bottom .3s;}
+#mobile-tutorial.hidden{bottom:-200px;}
+#mobile-tutorial strong{color:var(--amber);}
+#mobile-tutorial-close{position:absolute;top:5px;right:7px;background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:12px;}
 #btn-plans,#btn-new,#btn-select-all,#btn-focus,#btn-clear-focus,#btn-fit,#btn-save{display:none;}
 .note{width:150px;min-height:90px;padding:24px 10px 10px;}
 .note::before{width:40px;height:18px;top:-3px;}
@@ -266,7 +271,7 @@ body{font-size:14px;}
 #plans-drawer{width:240px;top:48px;height:calc(100vh - 48px);}
 .plan-card{padding:8px 10px;}
 .plan-card-title{font-size:12px;}
-#multi-bar{padding:5px 8px;font-size:10px;gap:5px;top:52px;}
+#multi-bar{padding:5px 8px;font-size:10px;gap:5px;top:auto;bottom:100px;left:10px;right:auto;transform:none;flex-wrap:wrap;max-width:calc(100vw - 20px);}
 .mb-btn{padding:3px 6px;font-size:9px;}
 #zoom-indicator{bottom:32px;right:10px;font-size:9px;padding:3px 6px;}
 #statusbar{height:24px;font-size:9px;padding:0 8px;gap:8px;}
@@ -287,12 +292,14 @@ body{font-size:14px;}
 #conn-label-popup{min-width:160px;padding:10px;font-size:10px;}
 
 /* FAB */
-#fab{position:fixed;bottom:40px;right:16px;width:52px;height:52px;border-radius:50%;background:var(--amber);border:none;
+#fab{position:fixed;bottom:190px;right:16px;width:52px;height:52px;border-radius:50%;background:var(--amber);border:none;
   box-shadow:0 4px 12px rgba(0,0,0,.5);z-index:1000;cursor:pointer;display:flex;align-items:center;justify-content:center;
-  font-size:24px;color:#000;transition:transform .2s;}
+  font-size:24px;color:#000;transition:transform .2s,bottom .3s;}
+#fab.fab-low{bottom:40px;}
 #fab:active{transform:scale(.95);}
 #fab.open{transform:rotate(45deg);}
-#fab-menu{position:fixed;bottom:100px;right:16px;display:none;flex-direction:column;gap:8px;z-index:999;}
+#fab-menu{position:fixed;bottom:250px;right:16px;display:none;flex-direction:column;gap:8px;z-index:999;transition:bottom .3s;}
+#fab-menu.fab-low{bottom:100px;}
 #fab-menu.open{display:flex;}
 .fab-item{background:rgba(12,10,6,.97);border:1px solid var(--amber);border-radius:8px;padding:10px 14px;
   font-family:'Courier Prime',monospace;font-size:11px;color:var(--text-cream);cursor:pointer;display:flex;align-items:center;gap:8px;
@@ -310,8 +317,10 @@ body{font-size:14px;}
 #side-panel,#plans-drawer{width:100%;}
 .plan-card-title{font-size:11px;}
 #new-plan-modal .npm-box{min-width:280px;padding:16px;}
-#fab{bottom:32px;right:12px;width:48px;height:48px;font-size:20px;}
-#fab-menu{bottom:88px;right:12px;}
+#fab{right:12px;width:48px;height:48px;font-size:20px;}
+#fab.fab-low{bottom:32px;}
+#fab-menu{right:12px;}
+#fab-menu.fab-low{bottom:88px;}
 .fab-item{padding:8px 12px;font-size:10px;}
 }
 
@@ -533,6 +542,18 @@ body{font-size:14px;}
   <strong>Space+drag</strong> to pan
 </div>
 
+<!-- MOBILE TUTORIAL -->
+<div id="mobile-tutorial">
+  <button id="mobile-tutorial-close">✕</button>
+  <strong>MOBILE CONTROLS:</strong><br>
+  <strong>Tap</strong> node → open panel<br>
+  <strong>Drag</strong> node → move<br>
+  <strong>Long-press</strong> → menu<br>
+  <strong>Swipe</strong> → pan board<br>
+  <strong>Pinch</strong> → zoom<br>
+  <strong>◎</strong> on note → connect
+</div>
+
 <!-- FAB -->
 <button id="fab">+</button>
 <div id="fab-overlay"></div>
@@ -669,7 +690,7 @@ function changeNodeColor(id,color){
 
 // ── Drag ─────────────────────────────────────
 function makeDraggable(el,node){
-  let sx,sy,snx,sny,moved;
+  let sx,sy,snx,sny,moved,longPressTimer;
   el.addEventListener('mousedown',e=>{
     if(['note-connect-btn','note-del-btn','note-done-btn','note-check'].some(c=>e.target.classList.contains(c)))return;
     if(e.button!==0)return;e.stopPropagation();
@@ -679,6 +700,16 @@ function makeDraggable(el,node){
     const up=()=>{el.classList.remove('dragging');el.style.zIndex='';setTimeout(()=>{isDraggingNode=false;},50);if(moved)save();document.removeEventListener('mousemove',mv);document.removeEventListener('mouseup',up);};
     document.addEventListener('mousemove',mv);document.addEventListener('mouseup',up);
   });
+  el.addEventListener('touchstart',e=>{
+    if(e.target.closest('.note-connect-btn')||e.target.closest('.note-del-btn')||e.target.closest('.note-done-btn')||e.target.closest('.note-check'))return;
+    e.stopPropagation();moved=false;isDraggingNode=false;
+    sx=e.touches[0].clientX;sy=e.touches[0].clientY;snx=node.x;sny=node.y;
+    el.classList.add('dragging');el.style.zIndex=100;
+    longPressTimer=setTimeout(()=>{ctxTargetId=node.id;showCtxMenu(sx,sy);el.classList.remove('dragging');},300);
+    const mv=e2=>{clearTimeout(longPressTimer);const dx=(e2.touches[0].clientX-sx)/vz,dy=(e2.touches[0].clientY-sy)/vz;if(Math.abs(dx)>3||Math.abs(dy)>3){moved=true;isDraggingNode=true;}node.x=snx+dx;node.y=sny+dy;el.style.left=node.x+'px';el.style.top=node.y+'px';renderAllConnections();e2.preventDefault();};
+    const up=()=>{clearTimeout(longPressTimer);el.classList.remove('dragging');el.style.zIndex='';setTimeout(()=>{isDraggingNode=false;},50);if(moved)save();el.removeEventListener('touchmove',mv);el.removeEventListener('touchend',up);};
+    el.addEventListener('touchmove',mv,{passive:false});el.addEventListener('touchend',up);
+  },{passive:false});
 }
 
 // ── Multi-Select ──────────────────────────────
@@ -934,17 +965,35 @@ canvasWrap.addEventListener('wheel',e=>{
 
 // ── Touch / Swipe Pan ────────────────────────────
 let touchStartX=0,touchStartY=0,touchLastX=0,touchLastY=0,touchMoved=false;
+let pinchStartDist=0,pinchStartVz=1,pinchCenterX=0,pinchCenterY=0;
 canvasWrap.addEventListener('touchstart',e=>{
   if(e.target.closest('.note'))return;
   if(e.touches.length===1){
     touchStartX=e.touches[0].clientX;touchStartY=e.touches[0].clientY;
     touchLastX=touchStartX;touchLastY=touchStartY;touchMoved=false;
     isPanning=true;lastMouse={x:touchStartX,y:touchStartY};
+  }else if(e.touches.length===2){
+    const dx=e.touches[0].clientX-e.touches[1].clientX;
+    const dy=e.touches[0].clientY-e.touches[1].clientY;
+    pinchStartDist=Math.sqrt(dx*dx+dy*dy);
+    pinchStartVz=vz;
+    pinchCenterX=(e.touches[0].clientX+e.touches[1].clientX)/2;
+    pinchCenterY=(e.touches[0].clientY+e.touches[1].clientY)/2;
+    isPanning=false;
   }
 },{passive:true});
 canvasWrap.addEventListener('touchmove',e=>{
   if(e.target.closest('.note'))return;
-  if(e.touches.length===1&&isPanning){
+  if(e.touches.length===2){
+    const dx=e.touches[0].clientX-e.touches[1].clientX;
+    const dy=e.touches[0].clientY-e.touches[1].clientY;
+    const dist=Math.sqrt(dx*dx+dy*dy);
+    const factor=dist/pinchStartDist;
+    const nz=clamp(pinchStartVz*factor,.2,3);
+    vx=pinchCenterX-(pinchCenterX-vx)*(nz/vz);
+    vy=pinchCenterY-(pinchCenterY-vy)*(nz/vz);
+    vz=nz;applyTransform();e.preventDefault();
+  }else if(e.touches.length===1&&isPanning){
     const tx=e.touches[0].clientX,ty=e.touches[0].clientY;
     const dx=tx-touchLastX,dy=ty-touchLastY;
     if(Math.abs(dx)>2||Math.abs(dy)>2){touchMoved=true;}
@@ -953,12 +1002,9 @@ canvasWrap.addEventListener('touchmove',e=>{
   }
 },{passive:false});
 canvasWrap.addEventListener('touchend',e=>{
-  isPanning=false;
-  if(!touchMoved&&e.target.closest('#canvas-wrap')){
-    const pt=screenToCanvas(touchLastX,touchLastY);const node=createNode(pt.x,pt.y);setTimeout(()=>openPanel(node.id),50);
-  }
+  isPanning=false;pinchStartDist=0;
 },{passive:true});
-canvasWrap.addEventListener('touchcancel',e=>{isPanning=false;});
+canvasWrap.addEventListener('touchcancel',e=>{isPanning=false;pinchStartDist=0;});
 
 document.addEventListener('dblclick',e=>{
   if(window.matchMedia('(max-width:768px)').matches)return;
@@ -1057,6 +1103,17 @@ function updateStatus(){document.getElementById('sb-nodes').textContent=nodes.le
 // ── Splash / Tutorial ─────────────────────────
 document.getElementById('splash-btn').addEventListener('click',()=>{const s=document.getElementById('splash');s.classList.add('out');setTimeout(()=>s.remove(),700);});
 document.getElementById('tutorial-close').addEventListener('click',()=>{const t=document.getElementById('tutorial');t.style.opacity='0';setTimeout(()=>t.remove(),500);});
+if(window.matchMedia('(max-width:768px)').matches){
+  document.getElementById('mobile-tutorial').style.display='block';
+  document.getElementById('tutorial').style.display='none';
+}
+document.getElementById('mobile-tutorial-close').addEventListener('click',()=>{
+  const t=document.getElementById('mobile-tutorial');
+  t.classList.add('hidden');
+  document.getElementById('fab').classList.add('fab-low');
+  document.getElementById('fab-menu').classList.add('fab-low');
+  setTimeout(()=>{t.style.opacity='0';setTimeout(()=>t.remove(),500);},300);
+});
 
 // ── INIT ──────────────────────────────────────
 function seedDemoPlan(plan){
