@@ -66,11 +66,11 @@ The system is built with pure, high-performance web technologies:
 Since MindBoard OS is a self-contained visual system, it requires no backend installation.
 
 1.  **Clone the repository:**
-    
+    ```bash
     git clone [https://github.com/waliullahx82/mindboard-os.git](https://github.com/waliullahx82/mindboard-os.git)
-   
+    ```
 2.  **Open in Browser:**
-    Launch `index.html` in any modern browser (Chrome, Edge, or Firefox recommended).
+    Launch `mindboard-os.html` in any modern browser (Chrome, Edge, or Firefox recommended).
 
 ---
 
