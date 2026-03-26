@@ -1,0 +1,340 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MindBoard OS — Visual Knowledge System</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Oswald:wght@300;400;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css">
+  </head>
+  <body>
+<!-- SPLASH -->
+<div id="splash">
+  <h1>MIND<em>BOARD</em> OS</h1>
+  <p>Visual Knowledge Operating System</p>
+  <button id="splash-btn">ENTER THE BOARD ⟶</button>
+</div>
+
+<!-- LOGIN MODAL -->
+<div id="login-modal">
+  <div class="login-box">
+    <h3>Welcome to MindBoard OS</h3>
+    <p>Enter your username to continue</p>
+    <input type="text" id="login-username" placeholder="Username" maxlength="20" autocomplete="off" />
+    <div class="login-error" id="login-error"></div>
+    <div class="login-row">
+      <button class="login-btn" id="login-confirm">CONTINUE</button>
+    </div>
+  </div>
+</div>
+
+    <!-- TOP BAR -->
+    <div id="topbar">
+      <div id="logo">MIND<span>BOARD</span></div>
+      <div class="tb-sep"></div>
+      <button class="tb-btn plan-btn" id="btn-plans">☰ PLANS</button>
+      <div class="tb-sep"></div>
+      <button class="tb-btn" id="btn-new">+ NODE</button>
+      <div class="tb-sep"></div>
+      <div class="color-swatches">
+        <div
+          class="swatch selected"
+          data-color="y"
+          style="background: #f5e642"
+        ></div>
+        <div class="swatch" data-color="b" style="background: #4fc3f7"></div>
+        <div class="swatch" data-color="g" style="background: #66bb6a"></div>
+        <div class="swatch" data-color="p" style="background: #ce93d8"></div>
+        <div class="swatch" data-color="o" style="background: #ffa726"></div>
+        <div class="swatch" data-color="r" style="background: #ef9a9a"></div>
+        <div class="swatch" data-color="t" style="background: #80cbc4"></div>
+      </div>
+      <div class="tb-sep"></div>
+      <button class="tb-btn" id="btn-select-all">⬜ SELECT ALL</button>
+      <button class="tb-btn" id="btn-focus">⊙ FOCUS</button>
+      <button class="tb-btn" id="btn-clear-focus" style="display: none">
+        ✕ FOCUS
+      </button>
+      <button class="tb-btn" id="btn-fit">⛶ FIT</button>
+      <button class="tb-btn" id="btn-save">💾 SAVE</button>
+      <div class="tb-hint" id="hint-text">
+        Dbl-click canvas → node · Shift+drag → select area · Shift+click →
+        select
+      </div>
+    </div>
+
+    <!-- MULTI-SELECT BAR -->
+    <div id="multi-bar">
+      <span class="mb-count" id="mb-count">0</span> selected
+      <div class="tb-sep" style="height: 20px"></div>
+      <button class="mb-btn" id="mb-mark-done">✓ Done</button>
+      <button class="mb-btn" id="mb-mark-cross">✕ Cross</button>
+      <button class="mb-btn" id="mb-clear-status">◎ Clear</button>
+      <div class="tb-sep" style="height: 20px"></div>
+      <span style="font-size: 10px; color: var(--text-dim)">Color:</span>
+      <div class="mb-color-row">
+        <div class="mb-swatch" data-color="y" style="background: #f5e642"></div>
+        <div class="mb-swatch" data-color="b" style="background: #4fc3f7"></div>
+        <div class="mb-swatch" data-color="g" style="background: #66bb6a"></div>
+        <div class="mb-swatch" data-color="p" style="background: #ce93d8"></div>
+        <div class="mb-swatch" data-color="o" style="background: #ffa726"></div>
+        <div class="mb-swatch" data-color="r" style="background: #ef9a9a"></div>
+        <div class="mb-swatch" data-color="t" style="background: #80cbc4"></div>
+      </div>
+      <div class="tb-sep" style="height: 20px"></div>
+      <button class="mb-btn danger" id="mb-delete">🗑 Delete</button>
+      <button class="mb-btn" id="mb-deselect">✕ Clear</button>
+    </div>
+
+    <!-- CANVAS -->
+    <div id="canvas-wrap">
+      <div id="canvas">
+        <svg id="connections-svg"></svg>
+        <div id="sel-rect"></div>
+      </div>
+    </div>
+
+    <!-- FOCUS OVERLAY -->
+    <div id="focus-overlay"></div>
+
+    <!-- SIDE PANEL -->
+    <div id="side-panel">
+      <div id="panel-header">
+        <div style="flex: 1">
+          <div
+            style="
+              font-size: 9px;
+              letter-spacing: 2px;
+              color: var(--text-dim);
+              text-transform: uppercase;
+              margin-bottom: 3px;
+            "
+          >
+            Node Title
+          </div>
+          <input
+            type="text"
+            id="panel-title"
+            placeholder="Untitled Node…"
+            autocomplete="off"
+          />
+        </div>
+        <button id="panel-close">✕</button>
+      </div>
+      <div id="panel-color-row">
+        <span class="pcl">Color</span>
+        <div
+          class="panel-swatch"
+          data-color="y"
+          style="background: #f5e642"
+        ></div>
+        <div
+          class="panel-swatch"
+          data-color="b"
+          style="background: #4fc3f7"
+        ></div>
+        <div
+          class="panel-swatch"
+          data-color="g"
+          style="background: #66bb6a"
+        ></div>
+        <div
+          class="panel-swatch"
+          data-color="p"
+          style="background: #ce93d8"
+        ></div>
+        <div
+          class="panel-swatch"
+          data-color="o"
+          style="background: #ffa726"
+        ></div>
+        <div
+          class="panel-swatch"
+          data-color="r"
+          style="background: #ef9a9a"
+        ></div>
+        <div
+          class="panel-swatch"
+          data-color="t"
+          style="background: #80cbc4"
+        ></div>
+      </div>
+      <div id="panel-done-row">
+        <label id="panel-done-toggle">
+          <input type="checkbox" id="panel-done-cb" />
+          <span id="panel-done-label">Mark as Complete / Done</span>
+        </label>
+      </div>
+      <div id="panel-state-row">
+        <button class="state-btn active" data-state="idea">📚 Idea</button>
+        <button class="state-btn" data-state="learning">⚡ Learning</button>
+        <button class="state-btn" data-state="understood">🧠 Understood</button>
+        <button class="state-btn" data-state="shared">🚀 Shared</button>
+      </div>
+      <div id="panel-body">
+        <div>
+          <div class="psl">Notes &amp; Details</div>
+          <textarea
+            id="panel-notes"
+            placeholder="Deep dive into this concept…"
+          ></textarea>
+        </div>
+        <div>
+          <div class="psl">
+            Task Checklist — ✓ tick done · ✕ cross out · track like a mastermind
+          </div>
+          <div id="panel-checklist"></div>
+          <button id="add-check-btn">+ Add checklist item</button>
+        </div>
+        <div>
+          <div class="psl">Connected Nodes</div>
+          <div id="panel-connections-list"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PLANS DRAWER -->
+    <div id="plans-drawer">
+      <div id="plans-header">
+        <h3>◈ MY PLANS</h3>
+        <button id="plans-close">✕</button>
+      </div>
+      <button id="new-plan-btn">+ NEW PLAN</button>
+      <div id="plans-list"></div>
+    </div>
+
+    <!-- NEW PLAN MODAL -->
+    <div id="new-plan-modal">
+      <div class="npm-box">
+        <h3>NEW PLAN</h3>
+        <input
+          type="text"
+          id="new-plan-name"
+          placeholder="Plan name (e.g. Web Dev Roadmap)…"
+          maxlength="50"
+        />
+        <div class="npm-row">
+          <button class="npm-btn confirm" id="npm-confirm">CREATE</button>
+          <button class="npm-btn cancel" id="npm-cancel">CANCEL</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONTEXT MENU -->
+    <div id="ctx-menu">
+      <div class="ctx-item" id="ctx-open">📂 Open Node</div>
+      <div class="ctx-item" id="ctx-connect">🧵 Connect</div>
+      <div class="ctx-item" id="ctx-focus">⊙ Focus Here</div>
+      <div class="ctx-item" id="ctx-done">✓ Toggle Done</div>
+      <div class="ctx-sep"></div>
+      <div class="ctx-clabel">CHANGE COLOR</div>
+      <div class="ctx-colors" id="ctx-color-swatches">
+        <div
+          class="ctx-swatch"
+          data-color="y"
+          style="background: #f5e642"
+        ></div>
+        <div
+          class="ctx-swatch"
+          data-color="b"
+          style="background: #4fc3f7"
+        ></div>
+        <div
+          class="ctx-swatch"
+          data-color="g"
+          style="background: #66bb6a"
+        ></div>
+        <div
+          class="ctx-swatch"
+          data-color="p"
+          style="background: #ce93d8"
+        ></div>
+        <div
+          class="ctx-swatch"
+          data-color="o"
+          style="background: #ffa726"
+        ></div>
+        <div
+          class="ctx-swatch"
+          data-color="r"
+          style="background: #ef9a9a"
+        ></div>
+        <div
+          class="ctx-swatch"
+          data-color="t"
+          style="background: #80cbc4"
+        ></div>
+      </div>
+      <div class="ctx-sep"></div>
+      <div class="ctx-item danger" id="ctx-delete">🗑 Delete Node</div>
+    </div>
+
+    <!-- CONNECTION POPUP -->
+    <div id="conn-label-popup">
+      <p>RELATIONSHIP TYPE</p>
+      <select id="conn-type-select">
+        <option value="depends on">depends on</option>
+        <option value="related to">related to</option>
+        <option value="builds upon">builds upon</option>
+        <option value="leads to">leads to</option>
+        <option value="part of">part of</option>
+        <option value="contrast">contrast</option>
+      </select>
+      <button id="conn-confirm-btn">Create Connection</button>
+    </div>
+
+    <!-- STATUS BAR -->
+    <div id="statusbar">
+      <span style="display: flex; align-items: center; gap: 4px"
+        ><span class="sb-dot"></span> ONLINE</span
+      >
+      <span id="sb-plan-name">PLAN: —</span>
+      <span id="sb-nodes">0 NODES</span>
+      <span id="sb-connections">0 CONNECTIONS</span>
+      <span id="sb-mode">MODE: EXPLORE</span>
+      <span id="sb-save-status">⚡ READY</span>
+    </div>
+    <div id="zoom-indicator">100%</div>
+
+    <!-- TUTORIAL -->
+    <div id="tutorial">
+      <button id="tutorial-close">✕</button>
+      <strong>CONTROLS:</strong><br />
+      <strong>Dbl-click</strong> canvas → new node<br />
+      <strong>Drag</strong> to move nodes<br />
+      <strong>Click</strong> node → open panel<br />
+      <strong>◎</strong> on note → connect<br />
+      <strong>Right-click</strong> → menu + colors<br />
+      <strong>Shift+drag</strong> → select area<br />
+      <strong>Space+drag</strong> to pan
+    </div>
+
+    <!-- MOBILE TUTORIAL -->
+    <div id="mobile-tutorial">
+      <button id="mobile-tutorial-close">✕</button>
+      <strong>MOBILE CONTROLS:</strong><br />
+      <strong>Tap</strong> node → open panel<br />
+      <strong>Drag</strong> node → move<br />
+      <strong>Long-press</strong> → menu<br />
+      <strong>Swipe</strong> → pan board<br />
+      <strong>Pinch</strong> → zoom<br />
+      <strong>◎</strong> on note → connect
+    </div>
+
+    <!-- FAB -->
+    <button id="fab">+</button>
+    <div id="fab-overlay"></div>
+    <div id="fab-menu">
+      <div class="fab-item" id="fab-plans">☰ Plans</div>
+      <div class="fab-item" id="fab-new">+ Node</div>
+      <div class="fab-item" id="fab-select">⬜ Select</div>
+      <div class="fab-item" id="fab-focus">⊙ Focus</div>
+      <div class="fab-item" id="fab-fit">⛶ Fit</div>
+      <div class="fab-item" id="fab-save">💾 Save</div>
+    </div>
+    <script src="script.js"></script>
+  </body>
+</html>
